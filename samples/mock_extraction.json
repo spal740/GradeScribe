@@ -1,0 +1,12 @@
+{
+    "student_id": "100099",
+    "source_file": "test-fail-case.pdf",
+    "csr": {
+        "key_excellents_count": 4,
+        "some_reservations_count": 4,
+        "major_deficiencies_count": 2,
+        "free_text_comments": "Student showed repeated lapses in patient safety, including incorrect medication dosing on two occasions. Concerns about clinical judgement."
+    },
+    "cat_score": 10,
+    "pogs_score": 3
+}

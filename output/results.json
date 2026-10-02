@@ -1,0 +1,230 @@
+[
+  {
+    "student_id": "100011",
+    "source_form": "2026-Gen Med Y4 – 1- Auckland- Student 001.pdf",
+    "scored": {
+      "student_id": "100011",
+      "CSR_Grade": "Pass",
+      "CSR_reasoning": "key_excellents_count=2, some_reservations_count=0, major_deficiencies_count=0. No Distinction (>4 excellents), no Borderline (needs 1 reservation), no Fail, so Pass.",
+      "CAT_Grade": "Distinction",
+      "CAT_reasoning": "cat_score=20 which meets >=19 threshold for Distinction.",
+      "POGS_Grade": "Distinction",
+      "POGS_reasoning": "pogs_score=10 equals the Distinction threshold of 10."
+    },
+    "final": {
+      "student_id": "100011",
+      "csr_ratings_per_domain": {
+        "clinical_knowledge": "Excellent",
+        "patient_assessment": "Good",
+        "clinical_decision": "Good",
+        "communication": "Excellent",
+        "engagement_team": "Unknown",
+        "professional_qualities": "Good"
+      },
+      "csr_counts": {
+        "key_excellents_count": 2,
+        "some_reservations_count": 0,
+        "major_deficiencies_count": 0
+      },
+      "cat_score": 20,
+      "pogs_score": 10,
+      "component_grades": {
+        "CSR_Grade": "Pass",
+        "CSR_reasoning": "key_excellents_count=2, some_reservations_count=0, major_deficiencies_count=0. No Distinction (>4 excellents), no Borderline (needs 1 reservation), no Fail, so Pass.",
+        "CAT_Grade": "Distinction",
+        "CAT_reasoning": "cat_score=20 which meets >=19 threshold for Distinction.",
+        "POGS_Grade": "Distinction",
+        "POGS_reasoning": "pogs_score=10 equals the Distinction threshold of 10."
+      },
+      "Final_Overall_Grade": "Distinction",
+      "Final_reasoning": "Step 2 matched: POGS=Distinction and CAT=Distinction (CSR=Pass)",
+      "fitness_to_practise": {
+        "concern": false,
+        "reason": ""
+      },
+      "escalation": false,
+      "escalation_reasons": [],
+      "review_required": false,
+      "content_safety": {
+        "flagged": false,
+        "categories": []
+      }
+    },
+    "supervisor_comments": {
+      "overall": "",
+      "per_domain": {},
+      "report_discussed_with_student": true
+    },
+    "minicex_form_data": {
+      "_note": "MiniCEX is out of scope for grading by this pipeline. Form data shown for reference only; the overall_competence_grade is taken directly from the supervisor's tick on the form.",
+      "overall_competence_grade": "0",
+      "assessor_name": "Garden Plant",
+      "date": "20/03/2026",
+      "setting": "Inpatient",
+      "patient_age": "48",
+      "patient_gender": "Female",
+      "diagnosis": "Chest pain",
+      "time_observing_minutes": "15",
+      "ratings": {
+        "history_taking": "Good",
+        "physical_exam": "Some Reservations",
+        "clinical_judgement": "Good",
+        "humanistic": "Some Reservations"
+      },
+      "aspects_done_well": "Maintainal clear\nflor during\nhistory",
+      "areas_for_improvement": "Broaden & prioritise\ndifferential diagnosis\nImprove communication with team about case."
+    }
+  },
+  {
+    "student_id": "100012",
+    "source_form": "2026-Gen Med Y4 – 1- Auckland- Student 002.pdf",
+    "scored": {
+      "student_id": "100012",
+      "CSR_Grade": "Distinction",
+      "CSR_reasoning": "key_excellents_count=6, some_reservations_count=0, major_deficiencies_count=0. Step 1 matched: Distinction requires >4 excellents and zero reservations and zero deficiencies.",
+      "CAT_Grade": "Pass",
+      "CAT_reasoning": "cat_score=18 falls in 14-18 range, which yields Pass per CAT thresholds.",
+      "POGS_Grade": "Distinction",
+      "POGS_reasoning": "pogs_score=10 equals 10, which meets the Distinction threshold for POGS."
+    },
+    "final": {
+      "student_id": "100012",
+      "csr_ratings_per_domain": {
+        "clinical_knowledge": "Excellent",
+        "patient_assessment": "Excellent",
+        "clinical_decision": "Excellent",
+        "communication": "Excellent",
+        "engagement_team": "Excellent",
+        "professional_qualities": "Excellent"
+      },
+      "csr_counts": {
+        "key_excellents_count": 6,
+        "some_reservations_count": 0,
+        "major_deficiencies_count": 0
+      },
+      "cat_score": 18,
+      "pogs_score": 10,
+      "component_grades": {
+        "CSR_Grade": "Distinction",
+        "CSR_reasoning": "key_excellents_count=6, some_reservations_count=0, major_deficiencies_count=0. Step 1 matched: Distinction requires >4 excellents and zero reservations and zero deficiencies.",
+        "CAT_Grade": "Pass",
+        "CAT_reasoning": "cat_score=18 falls in 14-18 range, which yields Pass per CAT thresholds.",
+        "POGS_Grade": "Distinction",
+        "POGS_reasoning": "pogs_score=10 equals 10, which meets the Distinction threshold for POGS."
+      },
+      "Final_Overall_Grade": "Distinction",
+      "Final_reasoning": "Step 2 matched: FSG=Distinction, CAT=Pass, POGS=Distinction",
+      "fitness_to_practise": {
+        "concern": false,
+        "reason": ""
+      },
+      "escalation": false,
+      "escalation_reasons": [],
+      "review_required": false,
+      "content_safety": {
+        "flagged": false,
+        "categories": []
+      }
+    },
+    "supervisor_comments": {
+      "overall": "Thank you for all your maki .",
+      "per_domain": {},
+      "report_discussed_with_student": true
+    },
+    "minicex_form_data": {
+      "_note": "MiniCEX is out of scope for grading by this pipeline. Form data shown for reference only; the overall_competence_grade is taken directly from the supervisor's tick on the form.",
+      "overall_competence_grade": "DISTINCTION",
+      "assessor_name": "Garden Plant",
+      "date": "20/03/2026",
+      "setting": "Inpatient",
+      "patient_age": "Presenting\n41",
+      "patient_gender": "Male",
+      "diagnosis": "Acute Percientific",
+      "time_observing_minutes": "20",
+      "ratings": {
+        "history_taking": "Excellent",
+        "physical_exam": "Excellent",
+        "clinical_judgement": "Excellent",
+        "humanistic": "Excellent"
+      },
+      "aspects_done_well": "Showed developing\nreasoning skills Suggested apropriate initial investigation",
+      "areas_for_improvement": "Align plan more\nClearly with differential diagnosis"
+    }
+  },
+  {
+    "student_id": "100013",
+    "source_form": "2026-Gen Med Y4 – 1- Auckland- Student 003.pdf",
+    "scored": {
+      "student_id": "100013",
+      "CSR_Grade": "Fail",
+      "CSR_reasoning": "key_excellents_count=0, some_reservations_count=0, major_deficiencies_count=2. Step 3 matched: major_deficiencies_count > 0 => Fail.",
+      "CAT_Grade": "Pass",
+      "CAT_reasoning": "cat_score=14. Matches Pass (14-18).",
+      "POGS_Grade": "Distinction",
+      "POGS_reasoning": "pogs_score=10. Matches Distinction (score = 10)."
+    },
+    "final": {
+      "student_id": "100013",
+      "csr_ratings_per_domain": {
+        "clinical_knowledge": "Good",
+        "patient_assessment": "Good",
+        "clinical_decision": "Good",
+        "communication": "Good",
+        "engagement_team": "Major Deficiency",
+        "professional_qualities": "Major Deficiency"
+      },
+      "csr_counts": {
+        "key_excellents_count": 0,
+        "some_reservations_count": 0,
+        "major_deficiencies_count": 2
+      },
+      "cat_score": 14,
+      "pogs_score": 10,
+      "component_grades": {
+        "CSR_Grade": "Fail",
+        "CSR_reasoning": "key_excellents_count=0, some_reservations_count=0, major_deficiencies_count=2. Step 3 matched: major_deficiencies_count > 0 => Fail.",
+        "CAT_Grade": "Pass",
+        "CAT_reasoning": "cat_score=14. Matches Pass (14-18).",
+        "POGS_Grade": "Distinction",
+        "POGS_reasoning": "pogs_score=10. Matches Distinction (score = 10)."
+      },
+      "Final_Overall_Grade": "Pass",
+      "Final_reasoning": "Step 4 (Pass): no Fail, Distinction, or Borderline combination matched; CSR=Fail, CAT=Pass, POGS=Distinction",
+      "fitness_to_practise": {
+        "concern": false,
+        "reason": ""
+      },
+      "escalation": false,
+      "escalation_reasons": [],
+      "review_required": false,
+      "content_safety": {
+        "flagged": false,
+        "categories": []
+      }
+    },
+    "supervisor_comments": {
+      "overall": "You have the lemontage & ability , but professionalism\nis lacking.",
+      "per_domain": {},
+      "report_discussed_with_student": true
+    },
+    "minicex_form_data": {
+      "_note": "MiniCEX is out of scope for grading by this pipeline. Form data shown for reference only; the overall_competence_grade is taken directly from the supervisor's tick on the form.",
+      "overall_competence_grade": "PASS\nDISTINCTION",
+      "assessor_name": "Garden Plant",
+      "date": "20/03/2026",
+      "setting": "Inpatient",
+      "patient_age": "36",
+      "patient_gender": "Male",
+      "diagnosis": "Shortness of Breath",
+      "time_observing_minutes": "15",
+      "ratings": {
+        "history_taking": "Excellent",
+        "physical_exam": "Excellent",
+        "clinical_judgement": "Excellent",
+        "humanistic": "Excellent"
+      },
+      "aspects_done_well": "Identified lacy clinical issues\nPerformed systematic examination",
+      "areas_for_improvement": "Structure management plan more clearly"
+    }
+  }
+]
