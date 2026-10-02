@@ -1,0 +1,50 @@
+[
+  {
+    "source_form": "2026-Gen Med Y4 – 1- Auckland- Student 001.pdf",
+    "status": "not_graded",
+    "reason": "Cannot score student '100011': CSR criteria not read cleanly (blank or multiple options selected): engagement_team",
+    "review_required": true
+  },
+  {
+    "source_form": "2026-Gen Med Y4 – 1- Auckland- Student 006.pdf",
+    "status": "not_graded",
+    "reason": "Cannot score student '100016': CSR criteria not read cleanly (blank or multiple options selected): patient_assessment, clinical_decision, communication",
+    "review_required": true
+  },
+  {
+    "source_form": "2026-Gen Med Y4 – 1- Auckland- Student 007.pdf",
+    "status": "not_graded",
+    "reason": "Cannot score student '100017': CSR criteria not read cleanly (blank or multiple options selected): engagement_team",
+    "review_required": true
+  },
+  {
+    "source_form": "2026-Gen Med Y4 – 1- Auckland- Student 008.pdf",
+    "status": "not_graded",
+    "reason": "Cannot score student '100018': CSR criteria not read cleanly (blank or multiple options selected): clinical_knowledge",
+    "review_required": true
+  },
+  {
+    "source_form": "2026-Gen Med Y4 – 1- Auckland- Student 009.pdf",
+    "status": "not_graded",
+    "reason": "Cannot score student '100019': CSR criteria not read cleanly (blank or multiple options selected): patient_assessment, clinical_decision, disease_prevention",
+    "review_required": true
+  },
+  {
+    "source_form": "2026-Gen Med Y4 – 1- Auckland- Student 010.pdf",
+    "status": "not_graded",
+    "reason": "Cannot score student '100020': CSR criteria not read cleanly (blank or multiple options selected): commitment_equity",
+    "review_required": true
+  },
+  {
+    "source_form": "20316F_1.PDF",
+    "status": "not_graded",
+    "reason": "No Excel record for student_id '10002R' (Excel has 20 students)",
+    "review_required": true
+  },
+  {
+    "source_form": "20F630_1.PDF",
+    "status": "not_graded",
+    "reason": "Cannot score student '100021': CSR criteria not read cleanly (blank or multiple options selected): patient_assessment",
+    "review_required": true
+  }
+]

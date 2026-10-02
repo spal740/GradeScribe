@@ -72,6 +72,20 @@ def read_students(limit: int | None = None) -> list[dict]:
     def safe_str(val):
         return str(val).strip() if pd.notna(val) else ""
 
+    def _parse_pogs(val):
+        """Parse POGS score, preserving missing as None (not 0).
+
+        A blank POGS must stay None so the payload builder skips the form
+        for human review, rather than scoring a missing value as 0 -> Fail.
+        A genuine 0 in the Excel still parses as 0 and grades normally.
+        """
+        if pd.isna(val):
+            return None
+        try:
+            return int(val)
+        except (ValueError, TypeError):
+            return None
+
     students = []
     skipped = 0
     for _, row in df.iterrows():
@@ -91,7 +105,7 @@ def read_students(limit: int | None = None) -> list[dict]:
                 "some_reservations_count": some_res,
                 "major_deficiencies_count": major_def,
             },
-            "pogs_score": safe_int(row.get("POGS_No")),
+            "pogs_score": _parse_pogs(row.get("POGS_No")),
             "_truth": {
                 "CSR_Grade": safe_str(row.get("Final Grade for Ward")),
                 "Final_Overall_Grade": safe_str(row.get("Final Overall Grade for Run")),

@@ -19,7 +19,7 @@ from pathlib import Path
 
 from src.logging_config import setup_logging
 from src.blob_reader import list_forms, download_blob
-from src.blob_writer import upload_results
+from src.blob_writer import upload_results, upload_needs_review
 from src.excel_reader import read_students
 from src.custom_extract import extract_form
 from src.payload_builder import build_payload, PayloadError
@@ -30,6 +30,7 @@ from src.content_safety import check_text, extract_free_text
 logger = logging.getLogger(__name__)
 
 RESULTS_PATH = Path(__file__).parent.parent / "output" / "results.json"
+NEEDS_REVIEW_PATH = Path(__file__).parent.parent / "output" / "needs_review.json"
 FORMS_CONTAINER = "raw-forms"
 
 CSR_DOMAIN_COMMENT_FIELDS = {
@@ -139,6 +140,25 @@ def _build_supervisor_comments(extracted: dict) -> dict:
     }
 
 
+def _normalise_competence_grade(raw: str) -> str:
+    """Normalise the MiniCEX overall competence grade to a bounded value.
+
+    The grade can only validly be one of four values. The extraction model
+    sometimes returns corrupt reads for this circled field (e.g.
+    'PASS\\nDISTINCTION', '0'). Since the valid set is closed, anything that
+    is not exactly one of the four is recorded as 'Unknown' rather than
+    passing raw junk downstream. MiniCEX is reference-only (not graded), so
+    this affects display only, not any grade.
+    """
+    valid = {"Pass", "Fail", "Distinction", "Borderline"}
+    text = (raw or "").strip()
+    # Case-insensitive match, but emit the canonical capitalised form.
+    for v in valid:
+        if text.lower() == v.lower():
+            return v
+    return "Unknown"
+
+
 def _build_minicex_form_data(extracted: dict) -> dict:
     ratings: dict[str, str] = {}
     for domain, boxes in MINICEX_RATING_FIELDS.items():
@@ -155,7 +175,9 @@ def _build_minicex_form_data(extracted: dict) -> dict:
             "Form data shown for reference only; the overall_competence_grade "
             "is taken directly from the supervisor's tick on the form."
         ),
-        "overall_competence_grade": _text_value(extracted, "overall_competence_grade"),
+        "overall_competence_grade": _normalise_competence_grade(
+            _text_value(extracted, "overall_competence_grade")
+        ),
         "assessor_name": _text_value(extracted, "minicex_assessor_name"),
         "date": _text_value(extracted, "minicex_date"),
         "setting": _text_value(extracted, "minicex_setting"),
@@ -218,7 +240,8 @@ def _process_form(form_name: str, students: list[dict],
         "scored": scored,
         "final": final,
         "supervisor_comments": supervisor_comments,
-        "minicex_form_data": minicex_form_data,
+        "cat_comment": _text_value(extracted, "cat_specific_comments"),
+        "minicex_form_data": minicex_form_data,        
     }
 
 
@@ -252,7 +275,7 @@ def run_pipeline() -> list[dict]:
     logger.info("Found %d forms to process", len(forms))
 
     results: list[dict] = []
-    failed: list[str] = []
+    needs_review: list[dict] = []
 
     for form_name in forms:
         try:
@@ -260,19 +283,52 @@ def run_pipeline() -> list[dict]:
             results.append(record)
         except PayloadError as e:
             logger.error("Skipping form '%s': %s", form_name, e)
-            failed.append(form_name)
-        except Exception:
+            needs_review.append({
+                "source_form": form_name,
+                "status": "not_graded",
+                "reason": str(e),
+                "review_required": True,
+            })
+        except Exception as e:
             logger.exception("Skipping form '%s': unexpected error", form_name)
-            failed.append(form_name)
+            needs_review.append({
+                "source_form": form_name,
+                "status": "error",
+                "reason": str(e),
+                "review_required": True,
+            })
 
-    logger.info("=== Pipeline run finished: %d succeeded, %d failed ===",
-                len(results), len(failed))
-    if failed:
-        logger.warning("Failed forms: %s", ", ".join(failed))
+    logger.info("=== Pipeline run finished: %d graded, %d need review ===",
+                len(results), len(needs_review))
+    if needs_review:
+        logger.warning("Forms needing review: %s",
+                       ", ".join(r["source_form"] for r in needs_review))
 
     _write_results(results)
+    _write_needs_review(needs_review)
     _upload_results_to_blob(results)
+    _upload_needs_review_to_blob(needs_review)
     return results
+
+
+def _write_needs_review(needs_review: list[dict]) -> None:
+    """Write skipped/failed forms (with reasons) to needs_review.json.
+
+    Written alongside results.json in the same output folder. results.json is
+    left untouched (graded forms only); this is a separate file listing forms
+    that could not be graded and why.
+    """
+    try:
+        NEEDS_REVIEW_PATH.parent.mkdir(parents=True, exist_ok=True)
+        NEEDS_REVIEW_PATH.write_text(
+            json.dumps(needs_review, indent=2, ensure_ascii=False),
+            encoding="utf-8",
+        )
+        logger.info("Wrote %d needs-review records locally to %s",
+                    len(needs_review), NEEDS_REVIEW_PATH)
+    except Exception:
+        logger.exception("Failed to write needs_review locally to %s",
+                         NEEDS_REVIEW_PATH)
 
 
 def _write_results(results: list[dict]) -> None:
@@ -295,6 +351,16 @@ def _upload_results_to_blob(results: list[dict]) -> None:
         upload_results(results)
     except Exception:
         logger.exception("Failed to upload results to blob storage")
+
+
+def _upload_needs_review_to_blob(needs_review: list[dict]) -> None:
+    if not needs_review:
+        logger.info("No needs-review records to upload to blob")
+        return
+    try:
+        upload_needs_review(needs_review)
+    except Exception:
+        logger.exception("Failed to upload needs_review to blob storage")
 
 
 if __name__ == "__main__":

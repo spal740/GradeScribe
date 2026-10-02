@@ -50,6 +50,8 @@ FREE_TEXT_FIELDS = [
     "disease_prevention_comments",
     "health_promotion_comments",
     "self_management_comments",
+    # CAT free-text
+    "cat_specific_comments",
     # MiniCEX free-text
     "minicex_aspects_done_well",
     "minicex_areas_for_improvement",

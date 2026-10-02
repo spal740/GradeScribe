@@ -10,6 +10,13 @@ OpenAI call):
   - cat_score present and parseable from the form
   - pogs_score present in the Excel record
 
+CSR counting rule:
+  - key_excellents_count   : Excellents counted from the 6 KEY fields only.
+  - some_reservations_count: Some Reservations counted across ALL 12 fields.
+  - major_deficiencies_count: Major Deficiencies counted across ALL 12 fields.
+  An Excellent in a non-key field is recorded as a rating but does NOT count
+  toward key_excellents_count.
+
 CSR quality gating (Unknown domains) is logged as a warning only; partial
 CSR data is still graded. Stricter CSR gating is noted as future work.
 
@@ -43,7 +50,7 @@ FIELD_MAP = {
     "fitness_comment": "fitness_comment",
 }
 
-# The six "key" CSR domains.
+# The six "key" CSR domains. Excellents are counted from these only.
 CSR_KEY_FIELDS = {
     "clinical_knowledge": {
         "excellent": "clinical_knowledge_excellent",
@@ -86,6 +93,53 @@ CSR_KEY_FIELDS = {
         "some_reservations": "professional_qualities_reservations",
         "major": "professional_qualities_major",
         "not_observed": "professional_qualities_not_obs",
+    },
+}
+
+# The six NON-KEY CSR domains. Only Some Reservations and Major Deficiencies
+# are counted from these (Excellents here do NOT count toward key excellents).
+CSR_NONKEY_FIELDS = {
+    "self_management": {
+        "excellent": "self_management_excellent",
+        "good": "self_management_good",
+        "some_reservations": "self_management_reservations",
+        "major": "self_management_major",
+        "not_observed": "self_management_not_obs",
+    },
+    "critical_reflection": {
+        "excellent": "critical_reflection_excellent",
+        "good": "critical_reflection_good",
+        "some_reservations": "critical_reflection_reservations",
+        "major": "critical_reflection_major",
+        "not_observed": "critical_reflection_not_obs",
+    },
+    "commitment_equity": {
+        "excellent": "commitment_equity_excellent",
+        "good": "commitment_equity_good",
+        "some_reservations": "commitment_equity_reservations",
+        "major": "commitment_equity_major",
+        "not_observed": "commitment_equity_not_obs",
+    },
+    "cultural_safety": {
+        "excellent": "cultural_safety_excellent",
+        "good": "cultural_safety_good",
+        "some_reservations": "cultural_safety_reservations",
+        "major": "cultural_safety_major",
+        "not_observed": "cultural_safety_not_obs",
+    },
+    "disease_prevention": {
+        "excellent": "disease_prevention_excellent",
+        "good": "disease_prevention_good",
+        "some_reservations": "disease_prevention_reservations",
+        "major": "disease_prevention_major",
+        "not_observed": "disease_prevention_not_obs",
+    },
+    "health_promotion": {
+        "excellent": "health_promotion_excellent",
+        "good": "health_promotion_good",
+        "some_reservations": "health_promotion_reservations",
+        "major": "health_promotion_major",
+        "not_observed": "health_promotion_not_obs",
     },
 }
 
@@ -147,7 +201,12 @@ def _parse_student_id(fields: dict) -> str:
         )
     _warn_low_confidence(FIELD_MAP["student_id"], entry)
     raw = entry.get("value")
-    sid = str(raw).strip() if raw is not None else ""
+    # Remove ALL whitespace, including internal spaces. Student IDs are digits
+    # with no spaces, so a space is always an extraction misread (e.g.
+    # "1000 16" -> "100016"); stripping it can only recover the true ID, never
+    # corrupt a valid one. Note this does NOT fix misread *characters* (e.g.
+    # "10002R"), which remain unresolvable and will fail the Excel lookup.
+    sid = "".join(str(raw).split()) if raw is not None else ""
     if not sid:
         raise PayloadError("Extracted student ID is empty")
     return sid
@@ -178,7 +237,29 @@ def _parse_cat_score(fields: dict) -> int | None:
     return score
 
 
+def _resolve_domain_rating(fields: dict, boxes: dict, domain: str) -> str | None:
+    """Return the single selected rating key for a domain, or None if 0 or 2+
+    options are selected (ambiguous -> recorded as Unknown by the caller).
+    """
+    selected = [
+        rating_key for rating_key, field_name in boxes.items()
+        if _is_selected(fields, field_name)
+    ]
+    if len(selected) == 1:
+        return selected[0]
+    logger.warning(
+        "CSR domain '%s' has %d ratings selected (%s); recording Unknown",
+        domain, len(selected), selected,
+    )
+    return None
+
+
 def _count_csr_and_ratings(fields: dict) -> tuple[dict, dict]:
+    """Count CSR categories per the rubric:
+      - Excellents: from the 6 KEY fields only.
+      - Some Reservations & Major Deficiencies: across ALL 12 fields.
+    Returns (counts, ratings_per_domain).
+    """
     counts = {
         "key_excellents_count": 0,
         "some_reservations_count": 0,
@@ -186,30 +267,48 @@ def _count_csr_and_ratings(fields: dict) -> tuple[dict, dict]:
     }
     ratings: dict[str, str] = {}
 
+    # 6 KEY fields: count Excellents + Some Reservations + Major Deficiencies
     for domain, boxes in CSR_KEY_FIELDS.items():
-        selected = [
-            rating_key for rating_key, field_name in boxes.items()
-            if _is_selected(fields, field_name)
-        ]
-        if len(selected) == 1:
-            rating_key = selected[0]
-            ratings[domain] = RATING_LABEL[rating_key]
-            if rating_key == "excellent":
-                counts["key_excellents_count"] += 1
-            elif rating_key == "some_reservations":
-                counts["some_reservations_count"] += 1
-            elif rating_key == "major":
-                counts["major_deficiencies_count"] += 1
-        else:
-            logger.warning(
-                "CSR domain '%s' has %d ratings selected (%s); recording Unknown",
-                domain, len(selected), selected,
-            )
+        rating_key = _resolve_domain_rating(fields, boxes, domain)
+        if rating_key is None:
             ratings[domain] = "Unknown"
+            continue
+        ratings[domain] = RATING_LABEL[rating_key]
+        if rating_key == "excellent":
+            counts["key_excellents_count"] += 1
+        elif rating_key == "some_reservations":
+            counts["some_reservations_count"] += 1
+        elif rating_key == "major":
+            counts["major_deficiencies_count"] += 1
+
+    # 6 NON-KEY fields: count ONLY Some Reservations + Major Deficiencies
+    # (Excellents in non-key fields are recorded but NOT counted).
+    for domain, boxes in CSR_NONKEY_FIELDS.items():
+        rating_key = _resolve_domain_rating(fields, boxes, domain)
+        if rating_key is None:
+            ratings[domain] = "Unknown"
+            continue
+        ratings[domain] = RATING_LABEL[rating_key]
+        if rating_key == "some_reservations":
+            counts["some_reservations_count"] += 1
+        elif rating_key == "major":
+            counts["major_deficiencies_count"] += 1
 
     logger.info("CSR counts: %s", counts)
     logger.info("CSR ratings per domain: %s", ratings)
     return counts, ratings
+
+
+def _fitness_is_answered(fields: dict) -> bool:
+    """True only if exactly one of fitness yes/no is selected.
+
+    Returns False when neither is selected (blank) or both are selected
+    (contradictory) -- i.e. the answer is malformed and the form should be
+    skipped rather than defaulting to 'no concern'.
+    """
+    yes_sel = _is_selected(fields, FIELD_MAP["fitness_yes"])
+    no_sel = _is_selected(fields, FIELD_MAP["fitness_no"])
+    return yes_sel != no_sel  # exactly one selected
 
 
 def _parse_fitness(fields: dict) -> tuple[bool, str]:
@@ -282,7 +381,6 @@ def build_payload(extracted_fields: dict, students: list[dict]) -> dict:
     csr_counts, csr_ratings = _count_csr_and_ratings(extracted_fields)
     cat_score = _parse_cat_score(extracted_fields)
     pogs_score = record.get("pogs_score")
-    fitness_concern, fitness_reason = _parse_fitness(extracted_fields)
 
     # Mandatory rubric inputs -- skip the form (no OpenAI call) if missing.
     if cat_score is None:
@@ -295,6 +393,30 @@ def build_payload(extracted_fields: dict, students: list[dict]) -> dict:
             f"Cannot score student '{student_id}': "
             f"pogs_score missing from Excel record"
         )
+
+    # CSR completeness -- every one of the 12 criteria must be read cleanly
+    # (exactly one option selected). A domain that is blank (zero selected) or
+    # ambiguous (two or more selected) is recorded as "Unknown" by
+    # _count_csr_and_ratings; if any are Unknown we cannot grade the form, so
+    # skip it for human review rather than grading around the gap.
+    unknown_domains = [d for d, r in csr_ratings.items() if r == "Unknown"]
+    if unknown_domains:
+        raise PayloadError(
+            f"Cannot score student '{student_id}': CSR criteria not read "
+            f"cleanly (blank or multiple options selected): "
+            f"{', '.join(unknown_domains)}"
+        )
+
+    # Fitness-to-practise must be answered (exactly one of yes/no selected).
+    # A blank or contradictory (both selected) answer is malformed; we skip
+    # rather than defaulting to 'no concern' on a safety-critical field.
+    if not _fitness_is_answered(extracted_fields):
+        raise PayloadError(
+            f"Cannot score student '{student_id}': fitness-to-practise not "
+            f"answered cleanly (neither or both of yes/no selected)"
+        )
+
+    fitness_concern, fitness_reason = _parse_fitness(extracted_fields)
 
     payload = {
         "student_id": student_id,
@@ -359,6 +481,37 @@ if __name__ == "__main__":
         "professional_qualities_reservations": cb(False),
         "professional_qualities_major": cb(False),
         "professional_qualities_not_obs": cb(False),
+        # Non-key domains (example: one major deficiency in self_management)
+        "self_management_excellent": cb(False),
+        "self_management_good": cb(False),
+        "self_management_reservations": cb(False),
+        "self_management_major": cb(True),
+        "self_management_not_obs": cb(False),
+        "critical_reflection_excellent": cb(True),
+        "critical_reflection_good": cb(False),
+        "critical_reflection_reservations": cb(False),
+        "critical_reflection_major": cb(False),
+        "critical_reflection_not_obs": cb(False),
+        "commitment_equity_excellent": cb(False),
+        "commitment_equity_good": cb(True),
+        "commitment_equity_reservations": cb(False),
+        "commitment_equity_major": cb(False),
+        "commitment_equity_not_obs": cb(False),
+        "cultural_safety_excellent": cb(False),
+        "cultural_safety_good": cb(True),
+        "cultural_safety_reservations": cb(False),
+        "cultural_safety_major": cb(False),
+        "cultural_safety_not_obs": cb(False),
+        "disease_prevention_excellent": cb(False),
+        "disease_prevention_good": cb(True),
+        "disease_prevention_reservations": cb(False),
+        "disease_prevention_major": cb(False),
+        "disease_prevention_not_obs": cb(False),
+        "health_promotion_excellent": cb(False),
+        "health_promotion_good": cb(True),
+        "health_promotion_reservations": cb(False),
+        "health_promotion_major": cb(False),
+        "health_promotion_not_obs": cb(False),
     }
     fake_students = [{
         "student_id": "100011",
